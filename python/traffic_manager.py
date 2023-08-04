@@ -200,6 +200,7 @@ def main():
 
                     # show image in a poping window
                     cv2.imshow('camera', s_frame[1])
+                    cv2.imwrite("../outputs/traffic_manager/%08d.jpg" % (s_frame[0]), s_frame[1])
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
                     spectator = world.get_spectator()
