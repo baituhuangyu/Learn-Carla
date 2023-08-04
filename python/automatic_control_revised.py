@@ -11,7 +11,7 @@ import sys
 
 import carla
 
-from python.agents.navigation.behavior_agent import BehaviorAgent
+from agents.navigation.behavior_agent import BehaviorAgent
 
 
 def main():
@@ -38,7 +38,8 @@ def main():
         spawn_point = random.choice(all_default_spawn) if all_default_spawn else carla.Transform()
 
         # create the blueprint library
-        ego_vehicle_bp = blueprint_library.find('vehicle.lincoln.mkz2017')
+        # ego_vehicle_bp = blueprint_library.find('vehicle.lincoln.mkz2017')
+        ego_vehicle_bp = world.get_blueprint_library().find('vehicle.mercedes.coupe')
         ego_vehicle_bp.set_attribute('color', '0, 0, 0')
         # spawn the vehicle
         vehicle = world.spawn_actor(ego_vehicle_bp, spawn_point)
@@ -47,7 +48,7 @@ def main():
         world.tick()
 
         # create the behavior agent
-        agent = BehaviorAgent(vehicle, behavior='normal')
+        agent = BehaviorAgent(vehicle, behavior='aggressive')
 
         # set the destination spot
         spawn_points = world.get_map().get_spawn_points()

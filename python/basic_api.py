@@ -28,7 +28,8 @@ def main():
         world.set_weather(weather)
 
         # create the ego vehicle
-        ego_vehicle_bp = blueprint_library.find('vehicle.mercedes-benz.coupe')
+        # ego_vehicle_bp = blueprint_library.find('vehicle.mercedes-benz.coupe')
+        ego_vehicle_bp = blueprint_library.find('vehicle.mini.cooper_s_2021')
         # black color
         ego_vehicle_bp.set_attribute('color', '0, 0, 0')
         # get a random valid occupation in the world
@@ -36,8 +37,8 @@ def main():
         # spawn the vehilce
         ego_vehicle = world.spawn_actor(ego_vehicle_bp, transform)
         # set the vehicle autopilot mode
-        ego_vehicle.set_autopilot(True)
-
+        # ego_vehicle.set_autopilot(True)
+        #
         # collect all actors to destroy when we quit the script
         actor_list.append(ego_vehicle)
 
@@ -52,26 +53,26 @@ def main():
             os.makedirs(output_path)
 
         # set the callback function
-        camera.listen(lambda image: image.save_to_disk(os.path.join(output_path, '%06d.png' % image.frame)))
+        # camera.listen(lambda image: image.save_to_disk(os.path.join(output_path, '%06d.png' % image.frame)))
         sensor_list.append(camera)
 
-        # we also add a lidar on it
-        lidar_bp = blueprint_library.find('sensor.lidar.ray_cast')
-        lidar_bp.set_attribute('channels', str(32))
-        lidar_bp.set_attribute('points_per_second', str(90000))
-        lidar_bp.set_attribute('rotation_frequency', str(40))
-        lidar_bp.set_attribute('range', str(20))
-
-        # set the relative location
-        lidar_location = carla.Location(0, 0, 2)
-        lidar_rotation = carla.Rotation(0, 0, 0)
-        lidar_transform = carla.Transform(lidar_location, lidar_rotation)
-
-        # spawn the lidar
-        lidar = world.spawn_actor(lidar_bp, lidar_transform, attach_to=ego_vehicle)
-        lidar.listen(
-            lambda point_cloud: point_cloud.save_to_disk(os.path.join(output_path, '%06d.ply' % point_cloud.frame)))
-        sensor_list.append(lidar)
+        # # we also add a lidar on it
+        # lidar_bp = blueprint_library.find('sensor.lidar.ray_cast')
+        # lidar_bp.set_attribute('channels', str(32))
+        # lidar_bp.set_attribute('points_per_second', str(90000))
+        # lidar_bp.set_attribute('rotation_frequency', str(40))
+        # lidar_bp.set_attribute('range', str(20))
+        #
+        # # set the relative location
+        # lidar_location = carla.Location(0, 0, 2)
+        # lidar_rotation = carla.Rotation(0, 0, 0)
+        # lidar_transform = carla.Transform(lidar_location, lidar_rotation)
+        #
+        # # spawn the lidar
+        # lidar = world.spawn_actor(lidar_bp, lidar_transform, attach_to=ego_vehicle)
+        # lidar.listen(
+        #     lambda point_cloud: point_cloud.save_to_disk(os.path.join(output_path, '%06d.ply' % point_cloud.frame)))
+        # sensor_list.append(lidar)
 
         while True:
             # set the sectator to follow the ego vehicle

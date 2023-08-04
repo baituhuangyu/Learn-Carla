@@ -45,7 +45,8 @@ def main():
         sensor_queue = Queue()
 
         # create the ego vehicle
-        ego_vehicle_bp = blueprint_library.find('vehicle.mercedes-benz.coupe')
+        # ego_vehicle_bp = blueprint_library.find('vehicle.mercedes-benz.coupe')
+        ego_vehicle_bp = blueprint_library.find('vehicle.mini.cooper_s_2021')
         # black color
         ego_vehicle_bp.set_attribute('color', '0, 0, 0')
         # get a random valid occupation in the world

@@ -26,13 +26,13 @@ def parser():
     argparser.add_argument(
         '-n', '--number-of-vehicles',
         metavar='N',
-        default=20,
+        default=5,
         type=int,
         help='number of vehicles (default: 30)')
     argparser.add_argument(
         '-d', '--number-of-dangerous-vehicles',
         metavar='N',
-        default=1,
+        default=5,
         type=int,
         help='number of dangerous vehicles (default: 3)')
     argparser.add_argument(
@@ -70,6 +70,10 @@ def main():
 
     try:    
         world = client.get_world()
+        weather = carla.WeatherParameters(cloudiness=10.0,
+                                          precipitation=10.0,
+                                          fog_density=10.0)
+        world.set_weather(weather)
         origin_settings = world.get_settings()
 
         traffic_manager = client.get_trafficmanager(args.tm_port)
@@ -78,7 +82,7 @@ def main():
         # Set physical mode only for cars around ego vehicle to save computation
         traffic_manager.set_hybrid_physics_mode(True)
         # default speed is 30
-        traffic_manager.global_percentage_speed_difference(80)
+        traffic_manager.global_percentage_speed_difference(-80)
 
         # Suggest using syncmode
         if args.sync:
@@ -88,12 +92,14 @@ def main():
                 synchronous_master = True
                 settings.synchronous_mode = True
                 # 20fps
-                settings.fixed_delta_seconds = 0.05
+                settings.fixed_delta_seconds = 0.01
                 world.apply_settings(settings)
 
         blueprints_vehicle = world.get_blueprint_library().filter("vehicle.*")
         # sort the vehicle list by id
         blueprints_vehicle = sorted(blueprints_vehicle, key=lambda bp: bp.id)
+        for iii in blueprints_vehicle:
+            print(iii.tags)
 
         spawn_points = world.get_map().get_spawn_points()
         number_of_spawn_points = len(spawn_points)
@@ -154,14 +160,14 @@ def main():
             # crazy car ignore traffic light, do not keep safe distance, and very fast
             traffic_manager.ignore_lights_percentage(danger_car, 100)
             traffic_manager.distance_to_leading_vehicle(danger_car, 0)
-            traffic_manager.vehicle_percentage_speed_difference(danger_car, -50)
+            traffic_manager.vehicle_percentage_speed_difference(danger_car, -150)
 
         print('spawned %d vehicles , press Ctrl+C to exit.' % (len(vehicles_list)))
 
         # create ego vehicle
-        ego_vehicle_bp = world.get_blueprint_library().find('vehicle.mercedes-benz.coupe')
+        ego_vehicle_bp = world.get_blueprint_library().find('vehicle.mercedes.coupe')
         # green color
-        ego_vehicle_bp.set_attribute('color', '0, 255, 0')
+        ego_vehicle_bp.set_attribute('color', '255, 255, 255')
         # set this one as ego
         ego_vehicle_bp.set_attribute('role_name', 'hero')
         # get a valid transform that has not been assigned yet
@@ -169,6 +175,9 @@ def main():
 
         ego_vehicle = world.spawn_actor(ego_vehicle_bp, transform)
         ego_vehicle.set_autopilot(True, args.tm_port)
+        traffic_manager.ignore_lights_percentage(ego_vehicle, 100)
+        traffic_manager.vehicle_percentage_speed_difference(ego_vehicle, -100)
+
         vehicles_id_list.append(ego_vehicle.id)
 
         # create sensor queue
@@ -193,6 +202,10 @@ def main():
                     cv2.imshow('camera', s_frame[1])
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
+                    spectator = world.get_spectator()
+                    transform = ego_vehicle.get_transform()
+                    spectator.set_transform(carla.Transform(transform.location + carla.Location(z=20),
+                                                            carla.Rotation(pitch=-90)))
 
                 except Empty:
                     print("Some of the sensor information is missed")
