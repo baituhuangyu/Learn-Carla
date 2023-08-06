@@ -71,7 +71,7 @@ def main():
     try:    
         world = client.get_world()
         weather = carla.WeatherParameters(cloudiness=10.0,
-                                          precipitation=10.0,
+                                          precipitation=80.0,
                                           fog_density=10.0)
         world.set_weather(weather)
         origin_settings = world.get_settings()
@@ -92,7 +92,7 @@ def main():
                 synchronous_master = True
                 settings.synchronous_mode = True
                 # 20fps
-                settings.fixed_delta_seconds = 0.01
+                settings.fixed_delta_seconds = 1
                 world.apply_settings(settings)
 
         blueprints_vehicle = world.get_blueprint_library().filter("vehicle.*")
@@ -184,7 +184,34 @@ def main():
         sensor_queue = Queue(maxsize=10)
 
         #  create camera
-        camera_bp = world.get_blueprint_library().find('sensor.camera.rgb')
+        # camera_bp = world.get_blueprint_library().find('sensor.camera.rgb')
+        # camera_bp.set_attribute("fov", "120")
+        # camera_bp.set_attribute("image_size_x", "640")
+        # camera_bp.set_attribute("image_size_y", "480")
+
+        camera_bp = world.get_blueprint_library().find('sensor.camera.fisheye')
+        # camera_bp.set_attribute("max_angle", "200")
+        camera_bp.set_attribute("x_size", "1000.0")
+        camera_bp.set_attribute("y_size", "600.0")
+        # camera_bp.set_attribute("f_x", "300.0")
+        # camera_bp.set_attribute("f_y", "300.0")
+        # camera_bp.set_attribute("c_x", "600.0")
+        # camera_bp.set_attribute("c_y", "400.0")
+        # camera_bp.set_attribute("d_1", "0.0")
+        # camera_bp.set_attribute("d_2", "0.0")
+        # camera_bp.set_attribute("d_3", "0.0")
+        # camera_bp.set_attribute("d_4", "0.0")
+        bp = camera_bp
+        bp.set_attribute('max_angle', str(210))
+        bp.set_attribute('d_1', str(0.08309221636708493))
+        bp.set_attribute('d_2', str(0.01112126630599195))
+        bp.set_attribute('d_3', str(-0.008587261043925865))
+        bp.set_attribute('d_4', str(0.0008542188930970716))
+        bp.set_attribute('f_x', str(320))
+        bp.set_attribute('f_y', str(320))
+        bp.set_attribute('c_x', str(640))
+        bp.set_attribute('c_y', str(480))
+
         # camera relative position related to the vehicle
         camera_transform = carla.Transform(carla.Location(x=1.5, z=2.4))
         camera = world.spawn_actor(camera_bp, camera_transform, attach_to=ego_vehicle)
@@ -200,7 +227,9 @@ def main():
 
                     # show image in a poping window
                     cv2.imshow('camera', s_frame[1])
-                    cv2.imwrite("../outputs/traffic_manager/%08d.jpg" % (s_frame[0]), s_frame[1])
+                    # cv2.imwrite("../outputs/traffic_manager/%08d.jpg" % (s_frame[0]), s_frame[1])
+                    # cv2.imwrite("%08d.jpg" % (1,), s_frame[1])
+                    # break
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
                     spectator = world.get_spectator()
