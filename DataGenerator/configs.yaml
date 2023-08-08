@@ -30,5 +30,5 @@ FILTER_CONFIG:
 
 SAVE_CONFIG:
   ROOT_PATH: data/test
-  STEP: 20
+  STEP: 1
   TOTAL: 20

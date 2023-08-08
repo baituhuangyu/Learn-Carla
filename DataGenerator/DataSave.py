@@ -1,5 +1,9 @@
+import copy
+
 from config import config_to_trans
 from export_utils import *
+import cv2
+
 
 class DataSave:
     def __init__(self, cfg):
@@ -69,5 +73,16 @@ class DataSave:
             save_label_data(kitti_label_fname, dt["kitti_datapoints"])
             save_label_data(carla_label_fname, dt['carla_datapoints'])
             save_calibration_matrices([camera_transform, lidar_transform], calib_filename, dt["intrinsic"])
-            save_lidar_data(lidar_fname, dt["sensor_data"][2])
+
+            show_img = cv2.cvtColor(dt["rgb_image"], cv2.COLOR_RGB2BGR)
+            bboxes_2d = dt["kitti_datapoints"] or []
+            for bbox_ins_2d in bboxes_2d:
+                if bbox_ins_2d.type == 'Car':
+                    bbox_2d = bbox_ins_2d.bbox
+                    cv2.rectangle(show_img, (bbox_2d[0], bbox_2d[1]), (bbox_2d[2], bbox_2d[3]), (0, 255, 0))
+            cv2.imshow('rgb_image', show_img)
+            cv2.waitKey(1)
+            print("rgb_image show ok")
+
+            # save_lidar_data(lidar_fname, dt["sensor_data"][2])
         self.captured_frame_no += 1

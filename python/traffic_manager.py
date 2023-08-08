@@ -70,9 +70,10 @@ def main():
 
     try:    
         world = client.get_world()
-        weather = carla.WeatherParameters(cloudiness=10.0,
-                                          precipitation=80.0,
-                                          fog_density=10.0)
+        weather = carla.WeatherParameters(cloudiness=2.0,
+                                          precipitation=2.0,
+                                          fog_density=2.0,
+                                          sun_altitude_angle=90.0)
         world.set_weather(weather)
         origin_settings = world.get_settings()
 
@@ -183,34 +184,34 @@ def main():
         # create sensor queue
         sensor_queue = Queue(maxsize=10)
 
-        #  create camera
-        # camera_bp = world.get_blueprint_library().find('sensor.camera.rgb')
-        # camera_bp.set_attribute("fov", "120")
-        # camera_bp.set_attribute("image_size_x", "640")
-        # camera_bp.set_attribute("image_size_y", "480")
-
-        camera_bp = world.get_blueprint_library().find('sensor.camera.fisheye')
-        # camera_bp.set_attribute("max_angle", "200")
-        camera_bp.set_attribute("x_size", "1000.0")
-        camera_bp.set_attribute("y_size", "600.0")
-        # camera_bp.set_attribute("f_x", "300.0")
-        # camera_bp.set_attribute("f_y", "300.0")
-        # camera_bp.set_attribute("c_x", "600.0")
-        # camera_bp.set_attribute("c_y", "400.0")
-        # camera_bp.set_attribute("d_1", "0.0")
-        # camera_bp.set_attribute("d_2", "0.0")
-        # camera_bp.set_attribute("d_3", "0.0")
-        # camera_bp.set_attribute("d_4", "0.0")
-        bp = camera_bp
-        bp.set_attribute('max_angle', str(210))
-        bp.set_attribute('d_1', str(0.08309221636708493))
-        bp.set_attribute('d_2', str(0.01112126630599195))
-        bp.set_attribute('d_3', str(-0.008587261043925865))
-        bp.set_attribute('d_4', str(0.0008542188930970716))
-        bp.set_attribute('f_x', str(320))
-        bp.set_attribute('f_y', str(320))
-        bp.set_attribute('c_x', str(640))
-        bp.set_attribute('c_y', str(480))
+        # create camera
+        camera_bp = world.get_blueprint_library().find('sensor.camera.rgb')
+        camera_bp.set_attribute("fov", "120")
+        camera_bp.set_attribute("image_size_x", "640")
+        camera_bp.set_attribute("image_size_y", "480")
+        #
+        # camera_bp = world.get_blueprint_library().find('sensor.camera.fisheye')
+        # # camera_bp.set_attribute("max_angle", "200")
+        # camera_bp.set_attribute("x_size", "1000.0")
+        # camera_bp.set_attribute("y_size", "600.0")
+        # # camera_bp.set_attribute("f_x", "300.0")
+        # # camera_bp.set_attribute("f_y", "300.0")
+        # # camera_bp.set_attribute("c_x", "600.0")
+        # # camera_bp.set_attribute("c_y", "400.0")
+        # # camera_bp.set_attribute("d_1", "0.0")
+        # # camera_bp.set_attribute("d_2", "0.0")
+        # # camera_bp.set_attribute("d_3", "0.0")
+        # # camera_bp.set_attribute("d_4", "0.0")
+        # bp = camera_bp
+        # bp.set_attribute('max_angle', str(210))
+        # bp.set_attribute('d_1', str(0.08309221636708493))
+        # bp.set_attribute('d_2', str(0.01112126630599195))
+        # bp.set_attribute('d_3', str(-0.008587261043925865))
+        # bp.set_attribute('d_4', str(0.0008542188930970716))
+        # bp.set_attribute('f_x', str(320))
+        # bp.set_attribute('f_y', str(320))
+        # bp.set_attribute('c_x', str(640))
+        # bp.set_attribute('c_y', str(480))
 
         # camera relative position related to the vehicle
         camera_transform = carla.Transform(carla.Location(x=1.5, z=2.4))

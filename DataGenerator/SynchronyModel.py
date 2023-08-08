@@ -18,12 +18,20 @@ class SynchronyModel:
         self.client = carla.Client('localhost', 2000)
         self.client.set_timeout(5.0)
         self.world = self.client.get_world()
+        self.set_weather()
         self.traffic_manager = self.client.get_trafficmanager()
         self.init_settings = None
         self.frame = None
         self.actors = {"non_agents": [], "walkers": [], "agents": [], "sensors": {}}
         self.data = {"sensor_data": {}, "environment_data": None}  # 记录每一帧的数据
         self.vehicle = None
+
+    def set_weather(self):
+        weather = carla.WeatherParameters(cloudiness=2.0,
+                                          precipitation=2.0,
+                                          fog_density=2.0,
+                                          sun_altitude_angle=90.0)
+        self.world.set_weather(weather)
 
     def set_synchrony(self):
         self.init_settings = self.world.get_settings()
@@ -79,6 +87,7 @@ class SynchronyModel:
 
             for response in self.client.apply_batch_sync(batch):
                 if response.error:
+                    print(response.error)
                     continue
                 else:
                     self.actors["non_agents"].append(response.actor_id)
@@ -102,6 +111,7 @@ class SynchronyModel:
 
         for response in self.client.apply_batch_sync(batch, True):
             if response.error:
+                print(response.error)
                 continue
             else:
                 self.actors["walkers"].append(response.actor_id)
@@ -124,6 +134,7 @@ class SynchronyModel:
         controllers_id = []
         for response in self.client.apply_batch_sync(batch, True):
             if response.error:
+                print(response.error)
                 pass
             else:
                 controllers_id.append(response.actor_id)
@@ -140,10 +151,21 @@ class SynchronyModel:
 
     def spawn_agent(self):
         vehicle_bp = random.choice(self.world.get_blueprint_library().filter(self.cfg["AGENT_CONFIG"]["BLUEPRINT"]))
-        trans_cfg = self.cfg["AGENT_CONFIG"]["TRANSFORM"]
-        transform = config_to_trans(trans_cfg)
-        transform = random.choice(self.world.get_map().get_spawn_points())
-        agent = self.world.spawn_actor(vehicle_bp, transform)
+        # trans_cfg = self.cfg["AGENT_CONFIG"]["TRANSFORM"]
+        # transform = config_to_trans(trans_cfg)
+        exp = None
+        agent = None
+        for tii in range(20):
+            try:
+                transform = random.choice(self.world.get_map().get_spawn_points())
+                agent = self.world.spawn_actor(vehicle_bp, transform)
+                exp = None
+                break
+            except Exception as e:
+                print(e)
+                exp = e
+        if exp or not agent:
+            raise exp
         agent.set_autopilot(True, self.traffic_manager.get_port())
         self.actors["agents"].append(agent)
 

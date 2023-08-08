@@ -2,13 +2,12 @@ import sys
 
 import numpy as np
 from numpy.linalg import inv
-
+from itertools import product
 from config import cfg_from_yaml_file
 from data_descriptor import KittiDescriptor, CarlaDescriptor
 from image_converter import depth_to_array, to_rgb_array
 import math
 from visual_utils import draw_3d_bounding_box
-
 
 import carla
 
@@ -82,11 +81,11 @@ def is_visible_by_bbox(agent, obj, rgb_image, depth_data, intrinsic, extrinsic):
         else:
             occluded = 2
 
-        velocity = "0 0 0" if isinstance(obj, carla.EnvironmentObject) else\
+        velocity = "0 0 0" if isinstance(obj, carla.EnvironmentObject) else \
             "{} {} {}".format(obj.get_velocity().x, obj.get_velocity().y, obj.get_velocity().z)
         acceleration = "0 0 0" if isinstance(obj, carla.EnvironmentObject) else \
             "{} {} {}".format(obj.get_acceleration().x, obj.get_acceleration().y, obj.get_acceleration().z)
-        angular_velocity = "0 0 0" if isinstance(obj, carla.EnvironmentObject) else\
+        angular_velocity = "0 0 0" if isinstance(obj, carla.EnvironmentObject) else \
             "{} {} {}".format(obj.get_angular_velocity().x, obj.get_angular_velocity().y, obj.get_angular_velocity().z)
         # draw_3d_bounding_box(rgb_image, vertices_pos2d)
 
@@ -107,6 +106,7 @@ def is_visible_by_bbox(agent, obj, rgb_image, depth_data, intrinsic, extrinsic):
         return kitti_data, carla_data
     return None, None
 
+
 def obj_type(obj):
     if isinstance(obj, carla.EnvironmentObject):
         return obj.type
@@ -116,6 +116,7 @@ def obj_type(obj):
         if obj.type_id.find('vehicle') is not -1:
             return 'Car'
         return None
+
 
 def get_relative_rotation_y(agent_rotation, obj_rotation):
     """ 返回actor和camera在rotation yaw的相对角度 """
@@ -131,9 +132,9 @@ def bbox_2d_from_agent(intrinsic_mat, extrinsic_mat, obj_bbox, obj_transform, ob
         bbox_transform = carla.Transform(obj_bbox.location, obj_bbox.rotation)
         bbox = transform_points(bbox_transform, bbox)
     else:
-        box_location = carla.Location(obj_bbox.location.x-obj_transform.location.x,
-                                      obj_bbox.location.y-obj_transform.location.y,
-                                      obj_bbox.location.z-obj_transform.location.z)
+        box_location = carla.Location(obj_bbox.location.x - obj_transform.location.x,
+                                      obj_bbox.location.y - obj_transform.location.y,
+                                      obj_bbox.location.z - obj_transform.location.z)
         box_rotation = obj_bbox.rotation
         bbox_transform = carla.Transform(box_location, box_rotation)
         bbox = transform_points(bbox_transform, bbox)
@@ -206,8 +207,7 @@ def calculate_occlusion_stats(vertices_pos2d, depth_image):
     for y_2d, x_2d, vertex_depth in vertices_pos2d:
         # 点在可见范围中，并且没有超出图片范围
         if MAX_RENDER_DEPTH_IN_METERS > vertex_depth > 0 and point_in_canvas((y_2d, x_2d)):
-            is_occluded = point_is_occluded(
-                (y_2d, x_2d), vertex_depth, depth_image)
+            is_occluded = point_is_occluded((y_2d, x_2d), vertex_depth, depth_image)
             if not is_occluded:
                 num_visible_vertices += 1
         else:
@@ -223,7 +223,7 @@ def point_in_canvas(pos):
 
 def point_is_occluded(point, vertex_depth, depth_image):
     y, x = map(int, point)
-    from itertools import product
+
     neigbours = product((1, -1), repeat=2)
     is_occluded = []
     for dy, dx in neigbours:
@@ -282,16 +282,17 @@ def proj_to_2d(camera_pos_vector, intrinsic_mat):
 def filter_by_distance(data_dict, dis):
     environment_objects = data_dict["environment_objects"]
     actors = data_dict["actors"]
-    for agent,_ in data_dict["agents_data"].items():
+    for agent, _ in data_dict["agents_data"].items():
         data_dict["environment_objects"] = [obj for obj in environment_objects if
                                             distance_between_locations(obj.transform.location, agent.get_location())
-                                            <dis]
+                                            < dis]
         data_dict["actors"] = [act for act in actors if
-                                            distance_between_locations(act.get_location(), agent.get_location())<dis]
+                               distance_between_locations(act.get_location(), agent.get_location()) < dis]
 
 
 def distance_between_locations(location1, location2):
-    return math.sqrt(pow(location1.x-location2.x, 2)+pow(location1.y-location2.y, 2))
+    return math.sqrt(pow(location1.x - location2.x, 2) + pow(location1.y - location2.y, 2))
+
 
 def calc_projected_2d_bbox(vertices_pos2d):
     """ 根据八个顶点的图片坐标，计算二维bbox的左上和右下的坐标值 """
@@ -301,6 +302,7 @@ def calc_projected_2d_bbox(vertices_pos2d):
     min_x, max_x = min(x_coords), max(x_coords)
     min_y, max_y = min(y_coords), max(y_coords)
     return [min_x, min_y, max_x, max_y]
+
 
 def degrees_to_radians(degrees):
     return degrees * math.pi / 180
